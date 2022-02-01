@@ -1,0 +1,14 @@
+operations to be carried out for displaying board:
+
+    middle of the screen: settings.screen_x / 2
+    starting position of board: set x equal to (middle - 2.5(settings.total_l_width))
+    starting position of each row of keys:
+        first row: middle - 5 * total_kwidth
+
+end messages:
+    1 guess: Genius
+    2 guesses: Magnificent
+    3: Impressive
+    4: Splendid
+    5: Great
+    6: Phew
