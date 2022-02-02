@@ -38,6 +38,3 @@ class Settings:
         self.l_spacing = 5
         self.total_lwidth = self.l_width + self.l_spacing
         self.total_lheight = self.l_height + self.l_spacing
-        
-        self.l_index = 0
-        self.index_min = 0

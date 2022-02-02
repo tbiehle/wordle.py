@@ -13,6 +13,7 @@ class Letter:
 
         self.bounce = True
         self.start = True
+        self.step = 0
 
         self.xpos = xpos
         self.ypos = ypos
