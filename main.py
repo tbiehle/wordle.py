@@ -24,6 +24,14 @@ class Wordle:
         self.letters = []
         self.change_position = True
 
+        # settings for letter animations
+        self.l_passed1 = False
+        self.l_passed2 = False
+        self.shake = True
+
+        self.l_index = 0
+        self.index_min = 0
+
         self.popup = PopUp(self)
         self.display_popup = False
         self.display_incorrect = False
@@ -56,16 +64,22 @@ class Wordle:
             pygame.display.flip()
             self.clock.tick(30)
 
+
     def _update_screen(self):
 
         self._display_title()
         self._display_letters()
         self._display_keyboard()
+        self._show_popup()
 
+
+    def _show_popup(self):
         if self.display_popup:
             self.popup._draw_popup(self.reactions[self.reaction_position])
         
         if self.popup.use <= 100 and self.display_incorrect:
+            if self.shake:
+                self._shake_letters()
             self.popup._draw_popup('Not in word list')
 
             if self.popup.use == 100:
@@ -77,6 +91,39 @@ class Wordle:
             self.popup._draw_popup(f'{self.ans_string.upper()}')
 
 
+    def _shake_letters(self):
+        for letter in self.letters:
+            if self.letters.index(letter) >= self.l_index - self.settings.num_letters and self.letters.index(letter) < self.l_index:
+                if self.shake:
+                    final_xpos = letter.xpos
+                    if not self.l_passed1 and letter.step < 2 and not self.l_passed1 and not self.l_passed2:
+                        letter.xpos += 4
+                        letter.step += 1
+
+                    elif letter.step == 2:
+                        self.l_passed1 = True
+                        letter.step += 1
+
+                    elif letter.step > 2 and letter.step < 6 and self.l_passed1:
+                        letter.xpos -= 4
+                        letter.step += 1
+
+                    elif letter.step == 6 and self.l_passed1 and not self.l_passed2:
+                        self.l_passed2 = True
+                        self.l_passed1 = False
+                        letter.step += 1
+
+                    elif letter.step > 6 and letter.step < 8 and self.l_passed2 and not self.l_passed1:
+                        letter.xpos += 4
+                        letter.step +=1
+
+                    elif letter.step == 8 and self.l_passed2 and not self.l_passed1:
+                        letter.xpos = final_xpos
+                        self.l_passed1 = False
+                        self.l_passed2 = False
+                        letter.step = 0
+
+
     def _reset_game(self):
         self.settings.screen_x, self.settings.screen_y = self.screen.get_size()
         self.ans_dict = {}
@@ -86,8 +133,8 @@ class Wordle:
         self._create_board()
         self._create_keyboard()
         self._generate_answer()
-        self.settings.l_index = 0
-        self.settings.index_min = 0
+        self.l_index = 0
+        self.index_min = 0
         self.display_popup = False
         self.display_incorrect = False
         self.display_word = False
@@ -183,12 +230,12 @@ class Wordle:
 
 
     def _process_letter(self, letter, delete=False):
-        if self.settings.l_index < 30:
+        if self.l_index < 30:
             if len(self.guess) < 5:
                 if not delete:
                     self.guess.append(letter)
 
-                item = self.settings.l_index
+                item = self.l_index
                 self.letters[item].letter = letter
                 if not delete:
                     self.letters[item].color = self.settings.active_grey
@@ -196,8 +243,8 @@ class Wordle:
                 self.letters[item].draw_letter()
 
 
-                if self.settings.l_index < 30 and not delete:
-                    self.settings.l_index += 1
+                if self.l_index < 30 and not delete:
+                    self.l_index += 1
 
 
     def _submit_guess(self):
@@ -221,7 +268,7 @@ class Wordle:
         
         for i in range(self.settings.num_letters):
             
-            current_letter = self.settings.l_index - (self.settings.num_letters - i)
+            current_letter = self.l_index - (self.settings.num_letters - i)
 
             self.letters[current_letter].fill = 0
 
@@ -262,12 +309,12 @@ class Wordle:
                 self._make_letters_wrong(current_letter)
 
         self.guess.clear()
-        self.settings.index_min += self.settings.num_letters
+        self.index_min += self.settings.num_letters
         self._reset_ans_dict()
         if self.reaction_position < self.settings.allowed_guesses - 1 and not self.display_popup:
             self.reaction_position += 1
 
-        if self.settings.l_index == self.settings.num_letters * self.settings.allowed_guesses and self.guessed == False:
+        if self.l_index == self.settings.num_letters * self.settings.allowed_guesses and self.guessed == False:
             self.display_word = True
                 
 
@@ -296,14 +343,14 @@ class Wordle:
         if len(self.guess) > 0:
             self.guess.pop()
 
-        if self.settings.l_index > self.settings.index_min:
+        if self.l_index > self.index_min:
 
-            self.settings.l_index -= 1
-            self.letters[self.settings.l_index].letter = ''
-            self.letters[self.settings.l_index].color = self.settings.dormant_grey
+            self.l_index -= 1
+            self.letters[self.l_index].letter = ''
+            self.letters[self.l_index].color = self.settings.dormant_grey
             
 
-            self._process_letter(self.letters[self.settings.l_index].letter, True)
+            self._process_letter(self.letters[self.l_index].letter, True)
                     
 
     def _display_letters(self):
