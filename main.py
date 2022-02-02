@@ -201,6 +201,8 @@ class Wordle:
 
 
     def _submit_guess(self):
+        correct_dict = {}
+        skip = False
 
         if self.guess == self.answer:
             self.guessed = True
@@ -211,6 +213,13 @@ class Wordle:
             return
         
         for i in range(self.settings.num_letters):
+            if self.guess[i] == self.answer[i]:
+                if self.guess[i] not in correct_dict:
+                    correct_dict[self.guess[i]] = 0
+                correct_dict[self.guess[i]] += 1
+
+        
+        for i in range(self.settings.num_letters):
             
             current_letter = self.settings.l_index - (self.settings.num_letters - i)
 
@@ -218,8 +227,15 @@ class Wordle:
 
             if self.guess[i] in self.ans_dict:
                 if self.ans_dict[self.guess[i]] > 0 and not self.guess[i] == self.answer[i]:
+                    
+                    try:
+                        if correct_dict[self.guess[i]] == self.ans_dict[self.guess[i]]:
+                            skip = True
+                    except KeyError:
+                        pass
 
-                    self.letters[current_letter].color = self.settings.possible
+                    if not skip:
+                        self.letters[current_letter].color = self.settings.possible
                     
                     for key in self.keys:
                         if key.letter == self.letters[current_letter].letter and key.color != self.settings.correct:
