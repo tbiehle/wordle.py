@@ -123,7 +123,7 @@ class Wordle:
         """Randomly select the answer for the wordle."""
         self.ans_string = ""
 
-        self.answer = self.answers[random.randint(0,1647)] #  Choose word from word list
+        self.answer = self.answers[random.randint(1622,1622)] #  Choose word from word list
 
         ans_list = [letter for letter in self.answer] #  Create list of letters in answer word
 
@@ -135,7 +135,7 @@ class Wordle:
 
         for letter in ans_list:
             self.ans_string += letter
-        print(self.ans_string)
+
         return ans_list
 
 
@@ -226,20 +226,24 @@ class Wordle:
             self.letters[current_letter].fill = 0
 
             if self.guess[i] in self.ans_dict:
+
                 if self.ans_dict[self.guess[i]] > 0 and not self.guess[i] == self.answer[i]:
-                    
+                    print(self.guess[i])
+                    print('here')
                     try:
                         if correct_dict[self.guess[i]] == self.ans_dict[self.guess[i]]:
                             skip = True
-                    except KeyError:
-                        pass
 
-                    if not skip:
-                        self.letters[current_letter].color = self.settings.possible
-                    
-                    for key in self.keys:
-                        if key.letter == self.letters[current_letter].letter and key.color != self.settings.correct:
-                            key.color = self.settings.possible
+                    except KeyError:
+                        skip = False
+
+                    finally:
+                        if not skip:
+                            self.letters[current_letter].color = self.settings.possible
+                        
+                            for key in self.keys:
+                                if key.letter == self.letters[current_letter].letter and key.color != self.settings.correct:
+                                    key.color = self.settings.possible
 
                 if self.guess[i] == self.answer[i]:
 
