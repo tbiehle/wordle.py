@@ -39,7 +39,7 @@ class Letter:
             self._bounce()
 
         self.rect = pygame.Rect(self.xpos, self.ypos, self.width, self.height)
-        pygame.draw.rect(self.screen, self.color, self.rect, self.fill)
+        pygame.draw.rect(self.screen, self.color, self.rect, self.fill, 5)
 
         font = pygame.font.SysFont(self.font, 48)
         text = font.render(f'{self.letter.upper()}', True, self.settings.white)

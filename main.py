@@ -5,6 +5,7 @@ from key import Key
 from letter import Letter
 from settings import Settings
 from popup import PopUp
+from r_button import ResetButton
 
 
 class Wordle:
@@ -85,10 +86,10 @@ class Wordle:
             self.reset_popup._draw_popup('Press control to restart.')
         
         if self.display_incorrect:
-            if self.popup.use <= 100:
-                self.popup._draw_popup('Not in word list')
+            if self.popup.use <= 40:
+                self.popup._draw_popup(self.message)
 
-                if self.popup.use == 100:
+                if self.popup.use == 40:
                     self.popup.increase = False
                     self.display_incorrect = False
                     self.popup.use = 0
@@ -216,15 +217,18 @@ class Wordle:
 
     def _check_mouse_events(self, mouse_pos):
         for key in self.keys:
-            if self.allow_typing:
-                if key.rect.collidepoint(mouse_pos): 
-                    if key.letter == '⌫':
-                        self._delete_letter()
+            if key.rect.collidepoint(mouse_pos): 
+                if key.letter == '⌫':
+                    self._delete_letter()
 
-                    elif key.letter == 'enter':
-                        self._submit_guess()
+                elif key.letter == 'enter':
+                    self._submit_guess()
+                
+                elif key.letter == 'RESTART':
+                    self._reset_game()
 
-                    else: 
+                else: 
+                    if self.allow_typing:
                         self._process_letter(key.letter)
 
 
@@ -275,6 +279,10 @@ class Wordle:
             self.allow_typing = False
         
         if self.guess not in self.guesses:
+            if len(self.guess) < 5:
+                self.message = "Not enough letters"
+            else:
+                self.message = "Not in word list"
             self.display_incorrect = True
             self.shake = True
             return
@@ -431,6 +439,9 @@ class Wordle:
                 delete.font_size = 32
             name.draw_key()
             self.keys.append(name)
+        
+        restart = ResetButton(self)
+        self.keys.append(restart)
 
 
     def _create_board(self):
