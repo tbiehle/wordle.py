@@ -27,7 +27,7 @@ class Wordle:
         # settings for letter animations
         self.l_passed1 = False
         self.l_passed2 = False
-        self.shake = True
+        self.shake = False
 
         self.l_index = 0
         self.index_min = 0
@@ -77,51 +77,57 @@ class Wordle:
         if self.display_popup:
             self.popup._draw_popup(self.reactions[self.reaction_position])
         
-        if self.popup.use <= 100 and self.display_incorrect:
-            if self.shake:
-                self._shake_letters()
-            self.popup._draw_popup('Not in word list')
+        if self.display_incorrect:
+            if self.popup.use <= 100:
+                self.popup._draw_popup('Not in word list')
 
-            if self.popup.use == 100:
-                self.popup.increase = False
-                self.display_incorrect = False
-                self.popup.use = 0
+                if self.popup.use == 100:
+                    self.popup.increase = False
+                    self.display_incorrect = False
+                    self.popup.use = 0
+            
+        for letter in self.letters:
+            if self.shake:
+                if letter.letter in self.guess:
+                    self._shake_letter(letter)
 
         if self.display_word:
             self.popup._draw_popup(f'{self.ans_string.upper()}')
 
 
-    def _shake_letters(self):
-        for letter in self.letters:
-            if self.letters.index(letter) >= self.l_index - self.settings.num_letters and self.letters.index(letter) < self.l_index:
-                if self.shake:
-                    final_xpos = letter.xpos
-                    if not self.l_passed1 and letter.step < 2 and not self.l_passed1 and not self.l_passed2:
-                        letter.xpos += 4
-                        letter.step += 1
+    def _shake_letter(self, letter):
 
-                    elif letter.step == 2:
-                        self.l_passed1 = True
-                        letter.step += 1
+        if letter.step < 2:
+            letter.xpos += 6
+            letter.step += 1
 
-                    elif letter.step > 2 and letter.step < 6 and self.l_passed1:
-                        letter.xpos -= 4
-                        letter.step += 1
+        elif letter.step == 2:
+            self.l_passed1 = True
+            letter.step += 1
 
-                    elif letter.step == 6 and self.l_passed1 and not self.l_passed2:
-                        self.l_passed2 = True
-                        self.l_passed1 = False
-                        letter.step += 1
+        elif letter.step > 2 and letter.step < 6 and self.l_passed1:
+            letter.xpos -= 6
+            letter.step += 1
 
-                    elif letter.step > 6 and letter.step < 8 and self.l_passed2 and not self.l_passed1:
-                        letter.xpos += 4
-                        letter.step +=1
+        elif letter.step == 6 and self.l_passed1:
+            self.l_passed2 = True
+            self.l_passed1 = False
+            letter.step += 1
 
-                    elif letter.step == 8 and self.l_passed2 and not self.l_passed1:
-                        letter.xpos = final_xpos
-                        self.l_passed1 = False
-                        self.l_passed2 = False
-                        letter.step = 0
+        elif letter.step > 6 and letter.step < 10 and self.l_passed2:
+            letter.xpos += 6
+            letter.step +=1
+
+            # Reset letters once everything is completed, making sure the change occurs before any letters can be updated.
+            if letter.step == 9:
+                for letter in self.letters:
+                    letter.xpos = letter.final_xpos
+                    letter.step = 0
+                self.l_passed1 = False
+                self.l_passed2 = False
+                self.shake = False
+                letter.step = 0
+
 
 
     def _reset_game(self):
@@ -257,6 +263,7 @@ class Wordle:
         
         if self.guess not in self.guesses:
             self.display_incorrect = True
+            self.shake = True
             return
         
         for i in range(self.settings.num_letters):

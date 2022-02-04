@@ -16,6 +16,7 @@ class Letter:
         self.step = 0
 
         self.xpos = xpos
+        self.final_xpos = xpos
         self.ypos = ypos
         self.width = self.settings.l_width
         self.height = self.settings.l_height
@@ -36,6 +37,7 @@ class Letter:
                 self.height += 10
                 self.start = False
             self._bounce()
+
         self.rect = pygame.Rect(self.xpos, self.ypos, self.width, self.height)
         pygame.draw.rect(self.screen, self.color, self.rect, self.fill)
 
@@ -58,5 +60,3 @@ class Letter:
                 self.xpos += 1
                 self.ypos += 1
             self.times_through += 1
-
-
