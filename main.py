@@ -32,7 +32,6 @@ class Wordle:
         self.l_index = 0
         self.index_min = 0
 
-        self.popup = PopUp(self)
         self.display_popup = False
         self.display_incorrect = False
         self.display_word = False
@@ -48,6 +47,7 @@ class Wordle:
         self._create_anslist()
         self._create_guesslist()
         self.answer = self._generate_answer()
+        self.allow_typing = True
 
         self.line_rect = pygame.Rect(0, 59, 500, 2)
         self._create_keyboard()
@@ -55,6 +55,9 @@ class Wordle:
     
 
     def run_game(self):
+
+        self.popup = PopUp(self)
+        self.reset_popup = PopUp(self, (8, 201, 255))
 
         while True:
             self.screen.fill((18, 18, 19))
@@ -75,7 +78,11 @@ class Wordle:
 
     def _show_popup(self):
         if self.display_popup:
+            self.popup.center = (self.settings.screen_xmiddle, self.settings.screen_y - 3 * (self.settings.total_lheight))
             self.popup._draw_popup(self.reactions[self.reaction_position])
+
+            self.reset_popup.center = (self.settings.screen_xmiddle, self.settings.screen_y - 3 * (self.settings.total_lheight))
+            self.reset_popup._draw_popup('Press control to restart.')
         
         if self.display_incorrect:
             if self.popup.use <= 100:
@@ -88,7 +95,7 @@ class Wordle:
             
         for letter in self.letters:
             if self.shake:
-                if letter.letter in self.guess:
+                if letter.letter in self.guess and letter.color == self.settings.active_grey:
                     self._shake_letter(letter)
 
         if self.display_word:
@@ -147,6 +154,8 @@ class Wordle:
         self.popup.increase = False
         self.popup.use = 0
         self.reaction_position = 0
+        self.allow_typing = True
+        self.guessed = False
 
 
     def _create_anslist(self):
@@ -164,7 +173,6 @@ class Wordle:
 
     def _create_guesslist(self):
         with open('a_g.txt', 'r') as guess_file:
-
             
             guesses = [word[:-1] for word in guess_file]
             for word in guesses:
@@ -176,7 +184,7 @@ class Wordle:
         """Randomly select the answer for the wordle."""
         self.ans_string = ""
 
-        self.answer = self.answers[random.randint(1622,1622)] #  Choose word from word list
+        self.answer = self.answers[random.randint(0, 2314)] #  Choose word from word list
 
         ans_list = [letter for letter in self.answer] #  Create list of letters in answer word
 
@@ -188,6 +196,7 @@ class Wordle:
 
         for letter in ans_list:
             self.ans_string += letter
+        print(self.answer)
 
         return ans_list
 
@@ -207,29 +216,32 @@ class Wordle:
 
     def _check_mouse_events(self, mouse_pos):
         for key in self.keys:
-            if key.rect.collidepoint(mouse_pos): 
-                if key.letter == '⌫':
-                    self._delete_letter()
+            if self.allow_typing:
+                if key.rect.collidepoint(mouse_pos): 
+                    if key.letter == '⌫':
+                        self._delete_letter()
 
-                elif key.letter == 'enter':
-                    self._submit_guess()
+                    elif key.letter == 'enter':
+                        self._submit_guess()
 
-                else: 
-                    self._process_letter(key.letter)
+                    else: 
+                        self._process_letter(key.letter)
 
 
     def _check_keydown_events(self, event):
 
         if event.key == pygame.K_ESCAPE:
             sys.exit()
-        if pygame.key.name(event.key) in self.letter_list:
-            self._process_letter(pygame.key.name(event.key))
 
-        if event.key == pygame.K_BACKSPACE or event.key == pygame.K_DELETE:
-            self._delete_letter()
+        if self.allow_typing:
+            if pygame.key.name(event.key) in self.letter_list:
+                self._process_letter(pygame.key.name(event.key))
 
-        if event.key == pygame.K_RETURN:
-            self._submit_guess()
+            if event.key == pygame.K_BACKSPACE or event.key == pygame.K_DELETE:
+                self._delete_letter()
+
+            if event.key == pygame.K_RETURN:
+                self._submit_guess()
         
         if event.key == pygame.K_LCTRL:
             self._reset_game()
@@ -260,6 +272,7 @@ class Wordle:
         if self.guess == self.answer:
             self.guessed = True
             self.display_popup = True
+            self.allow_typing = False
         
         if self.guess not in self.guesses:
             self.display_incorrect = True
@@ -282,8 +295,7 @@ class Wordle:
             if self.guess[i] in self.ans_dict:
 
                 if self.ans_dict[self.guess[i]] > 0 and not self.guess[i] == self.answer[i]:
-                    print(self.guess[i])
-                    print('here')
+
                     try:
                         if correct_dict[self.guess[i]] == self.ans_dict[self.guess[i]]:
                             skip = True

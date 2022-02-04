@@ -38,3 +38,6 @@ class Settings:
         self.l_spacing = 5
         self.total_lwidth = self.l_width + self.l_spacing
         self.total_lheight = self.l_height + self.l_spacing
+
+        #Settings for the popup.
+        self.restart_message = 'Press control to restart.'
